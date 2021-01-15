@@ -1,0 +1,3 @@
+config:
+  gcp:project: gke-project
+  gcp:zone: us-west1-a
