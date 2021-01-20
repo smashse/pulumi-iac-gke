@@ -41,19 +41,20 @@ gcloud beta billing accounts list --filter=open=true
 
 ### Create the PULUMI Project
 
-**Note:** Project IDs are immutable and can be set only during project creation. They must start with a lowercase letter and can have lowercase ASCII letters, digits or hyphens. Project IDs must be between 6 and 30 characters.
+**Note:** Project IDs are immutable and can be set only during project creation. They must start with a lowercase letter and can have lowercase ASCII letters, digits or hyphens. Project IDs must be between 6 and 30 characters. To avoid conflicts, when creating a project the ID is generated randomly, if you want to use a fixed ID after the project name, do as below.
 
 ```bash
-gcloud projects create gke-project --name=gke-project --set-as-default
-gcloud config set project gke-project
-gcloud beta billing projects link gke-project --billing-account `gcloud beta billing accounts list --filter=open=true --uri | cut -f 6 -d "/"`
+export PROJECT_ID=`date +%M%S%N`
+gcloud projects create gke-project-$PROJECT_ID --name=gke-project --set-as-default
+gcloud config set project gke-project-$PROJECT_ID
+gcloud beta billing projects link gke-project-$PROJECT_ID --billing-account `gcloud beta billing accounts list --filter=open=true --uri | cut -f 6 -d "/"`
 ```
 
 ### Create the PULUMI service account
 
 ```bash
 gcloud iam service-accounts create gkeadmin --display-name "GKE Admin"
-gcloud iam service-accounts keys create ~/.config/gcloud/gkeadmin-account.json --iam-account gkeadmin@gke-project.iam.gserviceaccount.com
+gcloud iam service-accounts keys create ~/.config/gcloud/gkeadmin-account.json --iam-account gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com
 ```
 
 ### Enable API Services
@@ -71,14 +72,14 @@ gcloud services enable serviceusage.googleapis.com
 ### Grant the service account permission
 
 ```bash
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/compute.admin
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/container.clusterAdmin
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/iam.serviceAccountAdmin
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/iam.serviceAccountKeyAdmin
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/iam.serviceAccountUser
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/iap.httpsResourceAccessor
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/storage.admin
-gcloud projects add-iam-policy-binding gke-project --member serviceAccount:gkeadmin@gke-project.iam.gserviceaccount.com --role roles/viewer
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/compute.admin
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/container.clusterAdmin
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/iam.serviceAccountAdmin
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/iam.serviceAccountKeyAdmin
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/iam.serviceAccountUser
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/iap.httpsResourceAccessor
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/storage.admin
+gcloud projects add-iam-policy-binding gke-project-$PROJECT_ID --member serviceAccount:gkeadmin@gke-project-$PROJECT_ID.iam.gserviceaccount.com --role roles/viewer
 ```
 
 ## Download the PULUMI template
@@ -133,7 +134,7 @@ pulumi stack init pulumi_gke_py
 ## Set GCP_PROJECT:
 
 ```bash
-pulumi config set gcp:project gke-project
+pulumi config set gcp:project gke-project-$PROJECT_ID
 ```
 
 ## Set GCP_REGION:
