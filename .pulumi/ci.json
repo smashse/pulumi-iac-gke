@@ -1,3 +1,3 @@
 {
-  "master": "pulumi_gke_py"
+  "main": "pulumi_gke_py"
 }
